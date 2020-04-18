@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <title>Data | CT-Application</title>
+</head>
+<body>
+<div class="container">
+    <div class="jumbotron">
+        <h1>CT-Application</h1>
+    </div>
+
+    <ul class="nav nav-pills">
+        <li class="nav-item">
+            <a class="nav-link" th:href="@{/}">Home</a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" th:href="@{/serverList}">Servers</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:href="@{/status}">Status</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" th:href="@{/data}">Data</a>
+        </li>
+        <li class="nav_item">
+            <a class="nav-link" th:href="@{/graphs}">Graphs</a>
+        </li>
+    </ul>
+    <br/>
+
+</div>
+
+<div class="container">
+
+
+    <div class="row">
+        <div class="col-10">
+            <figure class="figure">
+                <h2>Certificates currently in the database</h2>
+                <figcaption class="figure-caption">
+                    About <span th:text="${pageSize * nbPages}">520</span> results
+                </figcaption>
+            </figure>
+
+
+        </div>
+        <div class="col-2">
+            <a th:if="${!vatonly}" th:href="@{/data(size=${pageSize}, page=${1}, vatonly=${true})}">
+                <button type="button" class="btn btn-danger">Only with VAT</button></a>
+
+            <a th:if="${vatonly}" th:href="@{/data(size=${pageSize}, page=${1}, vatonly=${false})}">
+                <button type="button" class="btn btn-success">Only with VAT</button></a>
+        </div>
+    </div>
+
+    <table class="table table-hover table-sm">
+        <thead>
+        <tr>
+            <th scope="col">Id</th>
+            <th scope="col">Subject</th>
+            <th scope="col">Issuer</th>
+            <th scope="col">Not before</th>
+            <th scope="col">Not after</th>
+            <th scope="col">Signature algorithm</th>
+            <th scope="col">VAT number</th>
+
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="certificate : ${certificatePage}">
+            <td scope="row" th:text="${certificate.getId()}">ID</td>
+            <td th:text="${certificate.getSubject()}">Subject</td>
+            <td th:text="${certificate.getIssuer()}">Issuer</td>
+            <td th:text="${certificate.getNotBefore()}">Not before</td>
+            <td th:text="${certificate.getNotAfter()}">Not after</td>
+            <td th:text="${certificate.getSignatureAlg()}">Algorithm</td>
+            <td th:if="${certificate.getVAT() == null}">-</td>
+            <td th:if="${certificate.getVAT() != null}">
+                <a th:text="${certificate.getVAT()}"
+                   th:href="${'https://kbopub.economie.fgov.be/kbopub/zoeknummerform.html?nummer='
+                   + certificate.getVAT().substring(2) +'&actionLu=Recherche'}"
+                   target="_blank">VAT</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="row h-100 justify-content-center align-items-center">
+    <nav th:if="${nbCert / pageSize > 0 and nbCert / pageSize < 4}" aria-label="Page navigation">
+        <ul class="pagination">
+
+            <li th:each="pageNumber : ${pageNumbers}" class="page-item">
+                <a th:href="@{/data(size=${pageSize}, page=${pageNumber}, vatonly=${vatonly})}"
+                   th:text="${pageNumber}" class="page-link"></a>
+            </li>
+
+        </ul>
+    </nav>
+
+
+    <nav th:if="${nbPages > 0 and nbPages > 3}" aria-label="Page navigation">
+        <ul class="pagination">
+
+            <li th:if="${pageNumber > 1}" class="page-item">
+                <a class="page-link" th:href="@{/data(size=${pageSize}, page=${pageNumber}, vatonly=${vatonly})}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+
+            <li th:if="${pageNumber == 1}" class="page-item" disabled>
+                <a class="page-link" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+
+
+            <li th:if="${pageNumber > 1}" class="page-item">
+                <a th:href="@{/data(size=${pageSize}, page=${pageNumber - 1}, vatonly=${vatonly})}"
+                   th:text="${pageNumber - 1}" class="page-link"></a></li>
+
+            <li class="page-item active">
+                <a th:href="@{/data(size=${pageSize}, page=${pageNumber}, vatonly=${vatonly})}"
+                   th:text="${pageNumber}" class="page-link"></a></li>
+
+            <li th:if="${nbPages > pageNumber}" class="page-item">
+                <a th:href="@{/data(size=${pageSize}, page=${pageNumber + 1}, vatonly=${vatonly})}"
+                   th:text="${pageNumber + 1}" class="page-link"></a></li>
+
+
+            <li th:if="${nbPages > pageNumber}" class="page-item">
+                <a class="page-link" th:href="@{/data(size=${pageSize}, page=${pageNumber + 1}, vatonly=${vatonly})}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+
+            <li th:if="${!(nbPages > pageNumber)}" class="page-item" disabled>
+                <a class="page-link" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+
+        </ul>
+    </nav>
+
+
+</div>
+
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+</body>
+</html>

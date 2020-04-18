@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.css" integrity="sha256-IvM9nJf/b5l2RoebiFno92E5ONttVyaEEsdemDC6iQA=" crossorigin="anonymous" />
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.js" integrity="sha256-nZaxPHA2uAaquixjSDX19TmIlbRNCOrf5HO1oHl5p70=" crossorigin="anonymous"></script>
+    <title>Graphs | CT-Application</title>
+</head>
+<body>
+<div class="container">
+    <div class="jumbotron">
+        <h1>CT-Application</h1>
+    </div>
+
+    <ul class="nav nav-pills">
+        <li class="nav-item">
+            <a class="nav-link" th:href="@{/}">Home</a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" th:href="@{/serverList}">Servers</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:href="@{/status}">Status</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:href="@{/data}">Data</a>
+        </li>
+        <li class="nav_item">
+            <a class="nav-link active" th:href="@{/graphs}">Graphs</a>
+        </li>
+    </ul>
+    <br/>
+
+</div>
+
+<div class="container">
+
+    <h2>Statistics</h2>
+    <figcaption class="figure-caption">
+        About <span th:text="${count}">520</span> certificates in the database
+    </figcaption>
+
+    <div th:if="${!(dataIssuer.isEmpty() || labelsIssuer.isEmpty()) || !(vatCount.isEmpty()) || !(dataAlg.isEmpty() || labelsAlg.isEmpty())}">
+        <div class="row">
+        <div th:if="${!(dataIssuer.isEmpty() || labelsIssuer.isEmpty())}" class="col-lg-6">
+            <canvas id="issuers"></canvas>
+            <br/>
+            <script th:inline="javascript">
+            /*<![CDATA[*/
+                var ctx = document.getElementById('issuers').getContext('2d');
+                var issuers = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: /*[[${labelsIssuer}]]*/ ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+                        datasets: [{
+                            data: /*[[${dataIssuer}]]*/ [1, 1, 1, 1, 1, 1],
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.5)',
+                                'rgba(54, 162, 235, 0.5)',
+                                'rgba(255, 206, 86, 0.5)',
+                                'rgba(75, 192, 192, 0.5)',
+                                'rgba(153, 102, 255, 0.5)',
+                                'rgba(255, 159, 64, 0.5)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)',
+                                'rgba(255, 159, 64, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        legend:{display:false},
+                        title: {
+                            display: true,
+                            text: 'Most popular issuers',
+                        },
+
+                    }
+                });
+            /*]]>*/
+            </script>
+        </div>
+
+        <div th:if="${!(dataAlg.isEmpty() || labelsAlg.isEmpty())}" class="col-lg-6">
+            <canvas id="alg"></canvas>
+            <br/>
+            <script th:inline="javascript">
+                    /*<![CDATA[*/
+                    var ctx = document.getElementById('alg').getContext('2d');
+                    var alg = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: /*[[${labelsAlg}]]*/ ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+                            datasets: [{
+                                data: /*[[${dataAlg}]]*/ [1, 1, 1, 1, 1, 1],
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.5)',
+                                    'rgba(54, 162, 235, 0.5)',
+                                    'rgba(255, 206, 86, 0.5)',
+                                    'rgba(75, 192, 192, 0.5)',
+                                    'rgba(153, 102, 255, 0.5)',
+                                    'rgba(255, 159, 64, 0.5)'
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(75, 192, 192, 1)',
+                                    'rgba(153, 102, 255, 1)',
+                                    'rgba(255, 159, 64, 1)'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            legend:{display:false},
+                            title: {
+                                display: true,
+                                text: 'Most popular signature algorithms',
+                            },
+
+                        }
+                    });
+                    /*]]>*/
+                </script>
+        </div>
+
+        <div th:if="${!(vatCount.isEmpty())}" class="col-lg-6">
+            <canvas id="vatChart"></canvas>
+            <br/>
+            <script th:inline="javascript">
+                /*<![CDATA[*/
+                var ctx = document.getElementById('vatChart').getContext('2d');
+                var vatChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Exists', 'Not found', 'Not yet searched'],
+                        datasets: [{
+                            data: /*[[${vatCount}]]*/ [1, 1, 1],
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.5)',
+                                'rgba(54, 162, 235, 0.5)',
+                                'rgba(255, 206, 86, 0.5)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        legend:{display:false},
+                        title: {
+                            display: true,
+                            text: 'VAT search status',
+                        },
+
+                    }
+                });
+                /*]]>*/
+            </script>
+        </div>
+        </div>
+    </div>
+
+    <div th:if="${(dataIssuer.isEmpty() || labelsIssuer.isEmpty()) && vatCount.isEmpty() && (dataAlg.isEmpty() || labelsAlg.isEmpty())}" class="row d-flex justify-content-center">
+        <div class="col-4">
+            <div class="alert alert-primary text-center" role="alert">
+                No data to show
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+</body>
+</html>

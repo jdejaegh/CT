@@ -1,0 +1,357 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage[hyphens]{url}
+\usepackage{lmodern}
+\usepackage[top=4cm, bottom=4cm, left=4cm, right=4cm]{geometry}
+\usepackage{minted}
+\usepackage{graphicx}
+\usepackage{svg}
+\usepackage{dirtree}
+\usepackage[hidelinks]{hyperref}
+
+
+\begin{document}
+
+\begin{titlepage}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}} 
+\center 
+\HRule \\[0.4cm]
+{\huge \bfseries Guide du programmeur\\[0.4cm] CT-Application}\\[0.4cm] 
+\HRule \\[1.5cm]
+
+
+\begin{minipage}{0.4\textwidth}
+\begin{flushleft} \large
+\emph{Auteur:}\\
+Jules \textsc{Dejaeghere}
+\end{flushleft}
+\end{minipage}
+~
+\begin{minipage}{0.4\textwidth}
+\begin{flushright} \large
+\emph{Promoteur:} \\
+Pr Jean-Noël \textsc{Colin}
+\end{flushright}
+\end{minipage}\\[2cm]
+
+
+{\large 
+Version 1.0.0\\
+\medskip
+Année académique: 2019-2020}\\[2cm]
+
+\includesvg[height=2cm]{img/logo_.svg}
+ 
+
+
+\vfill
+
+\end{titlepage}
+
+
+\tableofcontents
+
+\newpage
+
+\section{Introduction}
+
+Ce document constitue la documentation technique de l'application développée par Jules \textsc{Dejaeghere} dans le cadre du cours \emph{INFOB318 - Projet individuel}, dispensé à l'Université de Namur par le Professeur Vincent \textsc{Englebert} au cours de l'année académique 2019-2020.  Ce projet a été proposé par le Professeur Jean-Noël \textsc{Colin}.
+
+Ce document vise à fournir une description du contexte de développement de l'application ainsi que les clefs de l'architecture du logiciel pour permettre sa maintenance, son évolution ou sa reprise.
+
+
+\section{Description conceptuelle}
+
+La description du projet fournie par le Professeur \textsc{Colin} est la suivante.
+
+\begin{quotation}
+L'objectif du projet est de constituer une base de données de noms de domaine enrichie d'informations disponibles publiquement ou calculées à partir de données publiques. Le workflow partira de la base de données \emph{Certificate Transparency Logs} (\url{https://www.certificate-transparency.org/what-is-ct}), et complétera avec les éléments suivants, à extraire des sources appropriées:
+\begin{itemize}
+    \item comparaison des certificats de CT avec ceux réellement utilisés sur le site web
+    \item statistiques sur les données des certificats (palmarès des CA, types de certificats...)
+    \item validation du numéro de TVA du registrant
+    \item extraction des données personnelles et adresses du site web 
+\end{itemize}
+Ces données seront ensuite intégrées à un outil utilisant l'IA pour détecter des noms de domaine malicieux et en bloquer l'accès aussi vite que possible. Le développement sera réalisé en Java et la base de données sera PostgreSQL.
+\end{quotation}
+
+Cette description ainsi que les différents échanges avec le Professeur au cours du projet ont constitué les lignes directrices du développement de l'application.  
+
+
+\section{Contexte du développement}
+
+L'application a été développée par Jules \textsc{Dejaeghere}, étudiant en bachelier en informatique à l'Université de Namur, entre septembre 2019 et mars 2020.  Un des objectifs lors du développement de l'application était d'arriver à produire une application de taille raisonnable mais fonctionnelle plutôt qu'une application plus ambitieuse et non fonctionnelle.  Cette application peut donc être améliorée par l'ajout de nouvelles fonctionnalités ou des considérations techniques plus poussées.  Plusieurs pistes d'amélioration de l'application seront proposées au cours de ce document.  Ces pistes constituent un point de départ intéressant dans le cadre de la poursuite du développement.
+
+
+\section{Sources et documentation de l'application}
+
+Actuellement, le code source de l'application est hébergé sur un dépôt GitHub géré par la Faculté d'Informatique de l'Université de Namur.  Ce dépôt est actuellement privé et se trouve à l'adresse suivante: \url{https://github.com/UNamurCSFaculty/1920_INFOB318_CT}.
+
+Ce dépôt contient les fichiers source de l'application ainsi que la documentation technique et de l'utilisateur.  Une version compilée du logiciel ainsi que le planning du projet se trouvent également dans le dépôt.
+
+Ce document reprend la documentation technique uniquement.  Pour déployer l'application et utiliser les fonctionnalités de cette dernière, le \emph{Guide de l'utilisateur} détaille les différentes étapes à suivre.
+
+
+\section{Environnement de développement}
+
+L'application est développée en Java, comme mentionné dans la description du projet.  Pour supporter le développement et sur conseil du Professeur \textsc{Colin}, le framework Spring Boot a été utilisé.  
+
+L'environnement de développement de JetBrains pour Java, \emph{IntelliJ IDEA 2019.3.3 (Ultimate Edition)}, a permis de faire fonctionner les différents outils utilisés lors du développement de l'application: Maven pour gérer le cycle de vie, JUnit pour développer des tests unitaires ainsi que le framework Spring Boot.
+
+
+\subsection{Compiler l'application}
+
+La compilation et la gestion des dépendances est prise en charge par Maven.  Grâce à IntelliJ, il est possible de lancer la compilation directement depuis l'environnement de développement, à l'aide du module Maven, et de faire abstraction des commandes exécutées par Maven.
+
+Il est également possible de compiler l'application grâce aux commandes Maven.  Une fois dans le répertoire contenant le fichier \path{pom.xml}, exécuter les commandes suivantes:
+
+\begin{minted}{bash}
+mvn clean
+mvn install
+\end{minted}
+
+Dans les deux cas, l'application compilée avec les dépendances se trouve dans le répertoire \path{target}.
+
+
+\subsection{Exécuter les tests unitaires}
+
+Au cours du développement de l'application, plusieurs classes de test ont été développées.  L'outil utilisé pour les tests unitaires est JUnit.  Tout comme Maven, il est possible de l'utiliser directement depuis l'environnement de développement pour lancer des tests unitaires.  En sélectionnant un fichier de test, il est possible de le lancer directement depuis IntelliJ.  
+
+
+\section{Développement}
+
+\subsection{Fonctionnement général de l'application et librairies utilisées}
+
+Au cours de son exécution, l'application télécharge des entrées de logs depuis des serveurs de logs du projet Certificate Transparency, décode les logs, parcourt les sites web repris dans les certificats à la recherche d'un numéro de TVA et sauvegarde les données dans la base de données.  Ces différentes étapes seront expliquées dans les prochaines parties.
+
+Pour appuyer les explications suivantes, la figure \ref{structure-fig} présente l'agencement des paquets et des fichiers dans le package \path{be.unamur.ct}.  Les paquets sont découpés de manière à refléter le fonctionnement de l'application.  Chaque paquet principal est décomposé en sous-paquets pour y répartir les classes en fonction de leur utilité.
+
+\begin{description}
+    \item[\path{exceptions}:] contient les exceptions qui concernent le paquet en question
+    \item[\path{model}:] contient les définitions d'objets Java utilisées dans le paquet
+    \item[\path{service}:] contient les fonctions principales de l'application
+    \item[\path{thread}:] contient la définition des threads que le paquet peut soumettre à des Executors
+\end{description}
+
+\begin{figure}
+\dirtree{%
+.1 be.unamur.ct.
+.2 CtApplication.java.
+.2 data.
+.3 dao.
+.4 CertificateDao.java.
+.4 ServerDao.java.
+.4 SliceDao.java.
+.3 service.
+.4 CertificateService.java.
+.2 decode.
+.3 exceptions.
+.4 NotAValidDomainException.java.
+.3 model.
+.4 Certificate.java.
+.3 service.
+.4 DecodeService.java.
+.3 thread.
+.4 DecodeEntryThread.java.
+.2 download.
+.3 model.
+.4 LogEntry.java.
+.4 LogList.java.
+.4 Server.java.
+.4 Slice.java.
+.3 service.
+.4 ServerService.java.
+.3 thread.
+.4 ScanLogThread.java.
+.4 SearchSliceThread.java.
+.2 scrap.
+.3 service.
+.4 VATScrapper.java.
+.3 thread.
+.4 ResumeVATScrapThread.java.
+.4 VATScrapperThread.java.
+.2 thread.
+.3 ThreadPool.java.
+.2 web.
+.3 controller.
+.4 WebController.java.
+}
+\caption{Arborescence des paquets et des fichiers source}
+\label{structure-fig}
+\end{figure}
+
+
+\subsubsection{Télécharger les logs}
+
+La première étape lors de l'exécution du programme est de télécharger les logs depuis un serveur du projet Certificate Transparency.  Ces logs sont téléchargeables via une API qui fournit des données au format JSON.
+
+Comprendre la manière dont les serveurs de logs fonctionnent n'est pas trivial.  Pour y arriver, plusieurs ressources ont été utiles.  La première n'est autre que le site de Certificate Transparency (\url{https://www.certificate-transparency.org}).  Il permet d'avoir un aperçu général du projet mais propose également une liste des serveurs de log connus.  La seconde est un article du site Medium: \emph{Parsing Certificate Transparency Logs Like a Boss} (\url{https://medium.com/cali-dog-security/parsing-certificate-transparency-lists-like-a-boss-981716dc506}).  L'article explique en détail comment sont organisés les logs et comment y accéder.  De plus, l'article détaille la manière dont il est possible d'extraire les informations des logs téléchargés.  Bien que l'auteur illustre ses propos par des scripts Python, il est facile de le transposer en Java.
+
+Le contenu de paquet \path{download} contient les méthodes nécessaires pour connaître la taille d'un log, découper ces logs en tranches pour les télécharger parallèlement et effectivement télécharger les logs.  L'implémentation de ces méthodes s'inspire de l'article présenté précédemment.
+
+Pour obtenir ces données, la librairie \emph{OkHttp3} est utilisée pour se connecter au serveur et effectuer les requêtes.  Une fois ces données au format JSON téléchargées, elles sont temporairement stockées dans un objet à l'aide de la librairie \emph{Jackson}.  Les données téléchargées sont encodées en Base64 et devront être décodées pour être utilisables.
+
+
+\subsubsection{Décoder les logs}
+
+Une fois téléchargés, les logs doivent être décodés et triés.  En effet, les logs sont téléchargés, encodés en Base64, et seuls les logs concernant des certificats belges nous intéressent dans notre cas.  Le paquet \path{decode} contient différentes méthodes qui permettent de décoder les données téléchargées et les enregistrer, si elles sont pertinentes, dans un objet Java.  
+
+Ce paquet contient une classe, \mintinline{text}{Certificate}, qui sera utilisée pour stocker les certificats pertinents dans la base de données.  Chaque certificat téléchargé sera converti en un objet \mintinline{text}{Certificate} avant d'être enregistré ou abandonné.  Si le programme n'arrive pas à construire un objet de ce type sur base du log reçu, il sera abandonné.
+
+La classe \mintinline{text}{Certificate} est également utilisée par Spring Boot pour stocker les objets dans la base de données.
+
+Pour décoder les certificats et en extraire les informations nécessaires, la librairie Bouncy Castle a été utilisée.
+
+\begin{figure}[h]
+\centering
+\begin{minted}{java}
+public class Certificate {
+
+    private long id;
+
+    private String subject;
+
+    private String issuer;
+    private Date notAfter;
+    private Date notBefore;
+
+    private String signatureAlg;
+    private int versionNumber;
+    private String VAT;
+    private boolean vatSearched;
+}
+\end{minted}
+\caption{Variables de la classe \mintinline{text}{Certificate}}
+\label{cert-fig}
+\end{figure}
+
+
+\subsubsection{Rechercher le numéro de TVA}
+
+Une fois les certificats belges identifiés et sauvegardés, ceux-ci sont traités à la recherche d'un numéro de TVA sur le site lié au certificat.  Le paquet \path{scrap} regroupe toutes les méthodes qui se chargent d'explorer le site web lié à un certificat à la recherche d'un numéro de TVA.
+
+Pour explorer le site, la méthode principale démarre de l'URL qui est renseignée dans le certificat et parcourt la page.  Si aucun numéro de TVA n'est trouvé sur la page, les liens présents sur la page pointant vers le même domaine sont parcourus récursivement de la même manière.  Pour casser la récursivité, une limite de profondeur est fournie à la fonction.  De même, un ensemble d'URL déjà visitées est tenu à jour de manière à ne pas visiter plusieurs fois la même page.
+
+Pour reconnaître un numéro de TVA dans une page web, l'application utilise l'expression régulière de la figure \ref{tva-fig}.  Le résultat est ensuite passé à une fonction qui se charge de normaliser les numéros de TVA avant de les enregistrer dans la base de données.
+
+\begin{figure}
+\centering
+\mintinline{java}{"(?i)((BE)?0([. -])?[0-9]\{3\}([. -])?[0-9]\{3\}([. -])?[0-9]\{3\})"}
+\caption{Expression régulière du numéro de TVA}
+\label{tva-fig}
+\end{figure}
+
+
+\subsection{Paquets additionnels}
+
+En plus des paquets déjà présentés, l'application comporte plusieurs paquets qui assurent des fonctions auxiliaires: gérer la persistance des données, gérer le mutli-threading ou encore proposer l'interface web.
+
+Ces paquets sont décrits dans les sections suivantes.
+
+\subsubsection{Persistance des données}
+
+Le paquet \path{data} prend en charge toutes les fonctions relatives à la persistance des données ainsi que certaines fonctions d'agrégation des données pour permettre leur affichage sur l'interface web.
+
+Ce paquet contient notamment trois interfaces qui étendent la classe \mintinline{java}{JpaRepository}.  Ces interfaces sont une abstraction permise par Spring Boot pour communiquer avec la base de données.  Cela permet notamment de récupérer les données persistantes à l'aide de méthodes Java, sans toujours nécessiter l'écriture de requêtes SQL.
+
+
+\subsubsection{Multi-threading}
+
+Pour permettre à l'application d'utiliser au mieux les ressources physiques de la machine, la classe \path{thread} fournit des méthodes qui permettent à l'application de s'exécuter en plusieurs threads.
+
+La classe contenue dans ce paquet est une implémentation étendue du pattern design singleton.  En effet, cette classe garantit l'existence unique de quatre objets de type \mintinline{java}{ExecutorService}.  Un \mintinline{java}{ExecutorService} permet une abstraction quant à l'implémentation d'une file de threads à exécuter.  Quatre files de threads existent dans l'application, chacune avec une fonction spécifique, et peuvent être appelées par d'autres classes pour effectuer des tâches lorsqu'un thread se libère.  En utilisant des objets de la classe \mintinline{java}{ExecutorService}, cela permet d'éviter de créer un nombre trop important de threads.
+
+
+\subsubsection{Interface web}
+
+Le paquet \path{web.controller} implémente les méthodes nécessaires pour fournir l'interface web.  Cette interface web a été réalisée à l'aide de Thymeleaf, qui propose une intégration avec Spring Boot.  L'interface  web fournit principalement des informations relatives à l'état acutel du programme, des statistiques relatives aux données stockées et la possibilité d'ajouter de nouveaux serveurs de logs à consulter.
+
+Les modèles HTML sont stockés dans le répertoire \path{src/main/ressources/templates}.
+
+
+\section{Poursuivre le développement}
+
+Dans l'optique d'une poursuite du développement de l'application, le présent document constitue un point de départ pour comprendre l'agencement des différentes parties du programme.  Cette section propose plusieurs pistes pour entamer la poursuite du développement de l'application.
+
+
+\subsection{Améliorer le code existant}
+
+Pendant le développement de l'application, à plusieurs reprises, un choix entre rapidité d'implémentation et efficacité a dû être posé.  Peut-être qu'un regard différent sur ces parties de l'application ou un peu plus de temps permettront de trouver une solution plus efficace et plus élégante.
+
+Les points où de tels choix ont dû être posés et qui ne semblent pas satisfaisants ont été annotés d'un commentaire \mintinline{java}{// TODO}, suivi d'une brève description du problème.
+
+\subsubsection{Gestion du multi-threading}
+
+La première partie où une amélioration est la bienvenue porte sur l'arrêt des threads en charge de la recherche du numéro de TVA sur les sites web contenus dans les certificats.  En effet, après observations, les threads ne semblent pas s'arrêter lorsque la méthode \mintinline{java}{interrupt()} du thread est appelée.
+
+Pour palier à ce problème, la solution implémentée consiste, lors de chaque entrée dans la fonction récursive principale du thread, à vérifier si l'objet \mintinline{java}{ExecutorService} dont est supposé dépendre ce thread n'a pas reçu de demande d'arrêt.  Si une demande d'arrêt à été émise pour cet objet, le thread sera alors interrompu. Cela pourrait poser problème dans le cas où la méthode est lancée par un thread qui ne dépend pas de cet objet \mintinline{java}{ExecutorService}.  Le code problématique se trouve dans le fichier \path{be/unamur/ct/scrap/service/VATScrapper.java} est repris dans la figure \ref{thread-fig}. 
+
+
+\begin{figure}[h]
+\centering
+\begin{minted}{java}
+/* TODO:
+ *  Find a better way to stop the thread
+ *  The Thread.interrupt() method doesn't seem to work
+ */
+if (threadPool.getVATScrapperExecutor().isShutdown()) {
+    throw new InterruptedException();
+}
+\end{minted}
+\caption{Arrêt manuel du thread}
+\label{thread-fig}
+\end{figure}
+
+\subsubsection{Recherche de l'autorité de certification racine}
+
+La seconde partie qui pourrait faire l'objet d'une amélioration concerne la recherche de l'autorité de certification racine dans une entrée du log.  Dans l'entrée d'un log, la chaîne de confiance depuis le certificat concerné jusqu'à l'autorité de certification racine doit être présente.  Cependant, aucun autre moyen n'a été trouvé pour extraire le certificat de l'autorité de certification racine que de parcourir cette chaîne de confiance, octet après octet, à partir de la fin, en tentant de lire un certificat après chaque décalage d'un octet.
+
+Cette chaine de confiance se trouve dans la partie nommée \mintinline{java}{extra_data} des données JSON récupérées du serveur.  L'itération est donc opérée sur ces données, comme repris dans la figure \ref{ca-fig}.  
+
+\begin{figure}
+\centering
+\begin{minted}[breaklines]{java}
+/*
+ * TODO:
+ *  find a better  way to determine the RootCA, the approach described above is probably not the best
+ */
+
+byte[] extraBin = Base64.decode(extra_data);
+int start = extraBin.length - 5;
+
+while (start >= 0) {
+
+    try {
+        // Get certificate type (X.509 or PreCert)
+        int id = (extraBin[start + 1] & 0xFF) | ((extraBin[start] & 0xFF) << 8);
+        int l = (extraBin[start + 4] & 0xFF) | ((extraBin[start + 3] & 0xFF) << 8) | ((extraBin[start + 2] & 0x0F) << 16);
+
+        byte[] certBin = Arrays.copyOfRange(extraBin, start + 5, l + start + 5);
+
+        try {
+            X509CertificateHolder certX = new X509CertificateHolder(certBin);
+            RDN cn = certX.getSubject().getRDNs(BCStyle.CN)[0];
+            String cns = IETFUtils.valueToString(cn.getFirst().getValue());
+            return cns;
+        } catch (IOException e) {
+        } catch (IndexOutOfBoundsException e) {
+        }
+    } catch (Exception e) {
+        logger.warn(e.toString());
+    }
+    start--;
+}
+\end{minted}
+\caption{Recherche de l'autorité de certification racine}
+\label{ca-fig}
+\end{figure}
+
+\subsection{Ajout de nouvelles fonctionnalités}
+
+Toujours dans l'optique de la poursuite du développement de l'application, plusieurs fonctionnalités additionnelles peuvent être envisagées.  Des fonctionnalités de recherche plus poussées sur les sites web pourraient être implémentées.  Par exemple, une recherche de numéro de téléphone, de localité ou d'adresse.
+
+
+\end{document}

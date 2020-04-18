@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <title>Status | CT-Application</title>
+</head>
+<body>
+<div class="container">
+    <div class="jumbotron">
+        <h1>CT-Application</h1>
+    </div>
+
+    <ul class="nav nav-pills">
+        <li class="nav-item">
+            <a class="nav-link" th:href="@{/}">Home</a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" th:href="@{/serverList}">Servers</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" th:href="@{/status}">Status</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:href="@{/data}">Data</a>
+        </li>
+        <li class="nav_item">
+            <a class="nav-link" th:href="@{/graphs}">Graphs</a>
+        </li>
+    </ul>
+    <br/>
+</div>
+
+<div class="container">
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Server handling</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Manage server launching and start downloading certificates from it.</li>
+                        <li class="list-group-item" th:text="${server}">status</li>
+                    </ul>
+                </div>
+
+            </div>
+
+        </div>
+        <div class="col-md-3">
+
+            <div class="card">
+                <div class="card-body">
+                    <h5>Downloader</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Download certificates from launched servers.</li>
+                        <li class="list-group-item" th:text="${slice}">status</li>
+                    </ul>
+
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-3">
+
+            <div class="card">
+                <div class="card-body">
+                    <h5>Decoder</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Decode downloaded certificates to store them in the database.</li>
+                        <li class="list-group-item" th:text="${decode}">status</li>
+                    </ul>
+
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-3">
+
+            <div class="card">
+                <div class="card-body">
+                    <h5>VAT scrapper</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Browser websites to find VAT numbers.</li>
+                        <li class="list-group-item" th:text="${vat}">status</li>
+                    </ul>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <br/>
+    <div class="row">
+        <div class="col-lg-9">
+        <div class="card border-danger mb-3" >
+            <div class="card-body text-danger">
+                <h5 class="card-title">Danger Zone</h5>
+                <p class="card-text">To stop the application, it is recommended to first stop the downloading part
+                    (<em>Server Handling</em> and <em>Downloader</em>).  Then other parts can be safely stopped.</p>
+
+                <div th:if="${server == 'Running' and slice == 'Running'}">
+                    <a th:href="@{/stopdown}"><button type="button" class="btn btn-primary">Stop downloading part</button></a>
+                </div>
+
+                <div th:if="${server == 'Closing' or slice == 'Closing'}">
+                    <button type="button" class="btn btn-primary" disabled>Downloading pat is stopping</button>
+                </div>
+
+                <div th:if="${server == 'Closed' and slice == 'Closed' and decode == 'Running' and vat == 'Running'}">
+                    <a th:href="@{/stopprocess}"><button type="button" class="btn btn-primary">Stop processing part</button></a>
+                </div>
+
+                <div th:if="${server == 'Closed' and slice == 'Closed' and (decode == 'Closing' or vat == 'Closing')}">
+                    <button type="button" class="btn btn-primary" disabled>Processing part is stopping</button>
+                </div>
+
+                <div th:if="${server == 'Closed' and slice == 'Closed' and decode == 'Closed' and vat == 'Closed'}">
+                    <a th:href="@{/shutdown}"><button type="button" class="btn btn-danger">SHUTDOWN Application</button></a>
+                </div>
+
+            </div>
+        </div>
+        </div>
+
+        <div th:if="${vat == 'Running'}" class="col-lg-3">
+            <div class="card border-warning mb-3" >
+                <div class="card-body">
+                    <h5 class="card-title warning-text">Relaunch VAT scrapper</h5>
+                    <p class="card-text">If the VAT scrapper was stopped in a previous execution, relaunch it from here.</p>
+                    <a class="btn btn-outline-dark" href="/relaunchvat">Relaunch</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+</body>
+</html>
